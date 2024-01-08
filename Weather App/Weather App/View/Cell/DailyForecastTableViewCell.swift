@@ -15,7 +15,7 @@ class DailyForecastTableViewCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.contrastColor
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         return label
     }()
     
@@ -23,7 +23,7 @@ class DailyForecastTableViewCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.contrastColor
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         return label
     }()
     
@@ -31,7 +31,7 @@ class DailyForecastTableViewCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.contrastColor
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         return label
     }()
     
@@ -50,10 +50,10 @@ class DailyForecastTableViewCell: UITableViewCell {
         stackView.axis = .horizontal
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 16,
-                                                                     leading: 16,
-                                                                     bottom: 16,
-                                                                     trailing: 16)
+        stackView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: Margin.margin16,
+                                                                     leading: Margin.margin16,
+                                                                     bottom: Margin.margin16,
+                                                                     trailing: Margin.margin16)
         stackView.spacing = 15
         return stackView
     }()

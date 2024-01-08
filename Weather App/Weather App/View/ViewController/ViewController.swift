@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class ViewController: UIViewController {
     
@@ -18,8 +19,8 @@ class ViewController: UIViewController {
         return imageView
     }()
     
-    private lazy var cardView: UIView = {
-        let cardView = UIView()
+    private lazy var weatherCardView: WeatherCardView = {
+        var cardView = WeatherCardView()
         cardView.translatesAutoresizingMaskIntoConstraints = false
         cardView.backgroundColor = UIColor.contrastColor
         cardView.layer.cornerRadius = 20
@@ -27,42 +28,11 @@ class ViewController: UIViewController {
         return cardView
     }()
     
-    private lazy var cityLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 20)
-        label.text = "Avaré"
-        label.textAlignment = .center
-        label.textColor = UIColor.primaryColor
-    
-        return label
-    }()
-    
-    private lazy var temperatureLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 70, weight: .bold)
-        label.textColor = .white
-        label.text = "25ºC"
-        label.textAlignment = .left
-        label.textColor = UIColor.primaryColor
-        
-        return label
-    }()
-    
-    private lazy var weatherIcon: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFit
-        
-        return imageView
-    }()
-    
     private lazy var humidityLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Umidade"
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         label.textColor = UIColor.contrastColor
         
         return label
@@ -71,7 +41,7 @@ class ViewController: UIViewController {
     private lazy var humidityValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         label.textColor = UIColor.contrastColor
         
         return label
@@ -88,7 +58,7 @@ class ViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Vento"
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         label.textColor = UIColor.contrastColor
         
         return label
@@ -97,7 +67,7 @@ class ViewController: UIViewController {
     private lazy var windValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         label.textColor = UIColor.contrastColor
         
         return label
@@ -117,10 +87,10 @@ class ViewController: UIViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.spacing = 3
         stackView.backgroundColor = UIColor.lightGray
-        stackView.layer.cornerRadius = 10
+        stackView.layer.cornerRadius = Corner.corner10
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.directionalLayoutMargins = 
-        NSDirectionalEdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+        NSDirectionalEdgeInsets(top: Margin.margin12, leading: Margin.margin24, bottom: Margin.margin12, trailing: Margin.margin24)
         return stackView
     }()
     
@@ -129,7 +99,7 @@ class ViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.contrastColor
         label.text = "PREVISÃO POR HORA"
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.font = UIFont.font12semibold
         label.textAlignment = .center
         
         return label
@@ -139,7 +109,7 @@ class ViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.itemSize = CGSize(width: 67, height: 84)
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
+        layout.sectionInset = UIEdgeInsets(top: 0, left: Margin.margin12, bottom: 0, right: Margin.margin12)
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -155,8 +125,8 @@ class ViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.contrastColor
-        label.text = "PROXIMOS DIAS"
-        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.text = "PRÓXIMOS DIAS"
+        label.font = UIFont.font12semibold
         label.textAlignment = .center
         
         return label
@@ -198,7 +168,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         setupView()
-        fetchData()
+        fetchData()	
     }
     
     private func fetchData() {
@@ -212,14 +182,17 @@ class ViewController: UIViewController {
         }
     }
     
+    private func showError(message: String?) {
+        let alert = UIAlertController(title: "Erro", message: message, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     private func loadData() {
-        cityLabel.text = city.name
+        weatherCardView.loadData(forecast: forecastResponse?.current, city: city)
         
-        temperatureLabel.text = forecastResponse?.current.temp.toCelsius()
         humidityValueLabel.text = "\(forecastResponse?.current.humidity ?? 0)mm"
         windValueLabel.text = "\(forecastResponse?.current.windSpeed ?? 0)km/h"
-        weatherIcon.image = UIImage(named: forecastResponse?.current.weather.first?.icon ?? "")
-        
         
         if forecastResponse?.current.dt.isDayTime() ?? true {
             backgroundImageView.image = UIImage(named:"backgroundDay")
@@ -242,17 +215,13 @@ class ViewController: UIViewController {
     
     private func setHierarchy() {
         view.addSubview(backgroundImageView)
-        view.addSubview(cardView)
+        view.addSubview(weatherCardView)
         view.addSubview(statsStackView)
         view.addSubview(hourlyForecastLabel)
         view.addSubview(hourlyCollectionView)
         view.addSubview(dailyForecastLabel)
         view.addSubview(dailyForecastTableView)
         view.addSubview(loaderView)
-        
-        cardView.addSubview(cityLabel)
-        cardView.addSubview(temperatureLabel)
-        cardView.addSubview(weatherIcon)
         
         loaderView.addSubview(loader)
     }
@@ -266,37 +235,22 @@ class ViewController: UIViewController {
         ])
         
         NSLayoutConstraint.activate([
-            cardView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
-            cardView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
-            cardView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
-            cardView.heightAnchor.constraint(equalToConstant: 150)
+            weatherCardView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Margin.margin60),
+            weatherCardView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Margin.margin32),
+            weatherCardView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Margin.margin32),
+            weatherCardView.heightAnchor.constraint(equalToConstant: 150)
         ])
         
         NSLayoutConstraint.activate([
-            cityLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 15),
-            cityLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 15),
-            cityLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -15),
-            cityLabel.heightAnchor.constraint(equalToConstant: 20),
-            temperatureLabel.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: 12),
-            temperatureLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 18),
-            temperatureLabel.heightAnchor.constraint(equalToConstant: 71),
-            weatherIcon.heightAnchor.constraint(equalToConstant: 86),
-            weatherIcon.widthAnchor.constraint(equalToConstant: 86),
-            weatherIcon.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -18),
-            weatherIcon.centerYAnchor.constraint(equalTo: temperatureLabel.centerYAnchor),
-            weatherIcon.leadingAnchor.constraint(equalTo: temperatureLabel.trailingAnchor, constant: 8)
-        ])
-        
-        NSLayoutConstraint.activate([
-            statsStackView.topAnchor.constraint(equalTo: cardView.bottomAnchor, constant: 24),
+            statsStackView.topAnchor.constraint(equalTo: weatherCardView.bottomAnchor, constant: Margin.margin24),
             statsStackView.widthAnchor.constraint(equalToConstant: 206),
             statsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
         NSLayoutConstraint.activate([
-            hourlyForecastLabel.topAnchor.constraint(equalTo: statsStackView.bottomAnchor, constant: 29),
-            hourlyForecastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
-            hourlyForecastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
+            hourlyForecastLabel.topAnchor.constraint(equalTo: statsStackView.bottomAnchor, constant: 29	),
+            hourlyForecastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Margin.margin32),
+            hourlyForecastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Margin.margin32),
             hourlyCollectionView.topAnchor.constraint(equalTo: hourlyForecastLabel.bottomAnchor, constant: 22),
             hourlyCollectionView.heightAnchor.constraint(equalToConstant: 84),
             hourlyCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -305,9 +259,9 @@ class ViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             dailyForecastLabel.topAnchor.constraint(equalTo: hourlyCollectionView.bottomAnchor, constant: 29),
-            dailyForecastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
-            dailyForecastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
-            dailyForecastTableView.topAnchor.constraint(equalTo: dailyForecastLabel.bottomAnchor, constant: 16),
+            dailyForecastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Margin.margin32),
+            dailyForecastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Margin.margin32),
+            dailyForecastTableView.topAnchor.constraint(equalTo: dailyForecastLabel.bottomAnchor, constant: Margin.margin16),
             dailyForecastTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             dailyForecastTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             dailyForecastTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
@@ -341,9 +295,7 @@ extension ViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.indentifier, for: indexPath) as? HourlyForecastCollectionViewCell else {
-            return UICollectionViewCell()
-        }
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.indentifier, for: indexPath) as? HourlyForecastCollectionViewCell else { return UICollectionViewCell() }
         
         let forecast = forecastResponse?.hourly[indexPath.row]
         cell.loadData(time: forecast?.dt.toHourFormat(),
@@ -365,6 +317,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         }
         
         let forecast = forecastResponse?.daily[indexPath.row]
+        
         cell.loadData(weekDay: forecast?.dt.toWeekdayName().uppercased(),
                       min: forecast?.temp.min.toCelsius(),
                       max: forecast?.temp.max.toCelsius(),
